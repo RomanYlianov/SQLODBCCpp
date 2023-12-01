@@ -5,13 +5,20 @@
 #include <ctype.h>
 #include <string>
 #include <iostream>
+#include <locale>
+#include <codecvt>
+
+
 using namespace std;
+
 SQLWCHAR connectionStringDSN[256] = L"DSN=autoserviceConn;UID=ru; PWD=ru;";
 
 SQLWCHAR connectionStringDriver[256] = L"DRIVER={ODBC Driver 17 for SQL Server};SERVER={localhost\\SQLExpress};DATABASE={autoservice};UID=ru;PWD=ru;";
 
-
-
+string utf8_encode(const std::wstring& source)
+{
+	return std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(source);
+}
 
 void errorMessage(const char* s)
 {
@@ -178,8 +185,9 @@ void ListDSN()
 		&wDSNLen, szDescription, 256, &wDesLen);
 	while (retCode == SQL_SUCCESS || retCode ==	SQL_SUCCESS_WITH_INFO)
 	{
-		DSNName = (string)((char*)szDSN);
-		Descr = (string)((char*)szDescription);
+		DSNName = utf8_encode(szDSN);
+		Descr = utf8_encode(szDescription);
+		
 		resultString += DSNName;
 		resultString += "\n";
 		retCode = SQLDataSources(hEnv,
